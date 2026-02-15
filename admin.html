@@ -159,28 +159,57 @@
 
     </div>
 
+    <style>
+        .hidden {
+            display: none !important;
+        }
+    </style>
+
     <script>
+        // Auth Logic
+        const SESSION_KEY = 'cherryza_admin_logged_in';
+
+        function checkAuth() {
+            if (sessionStorage.getItem(SESSION_KEY) === 'true') {
+                showAdminContent();
+            } else {
+                showLoginScreen();
+            }
+        }
+
+        function showAdminContent() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('admin-content').classList.remove('hidden');
+        }
+
+        function showLoginScreen() {
+            document.getElementById('login-screen').classList.remove('hidden');
+            document.getElementById('admin-content').classList.add('hidden');
+        }
+
         function handleLogin(e) {
             e.preventDefault();
             const u = document.getElementById('username').value;
             const p = document.getElementById('password').value;
 
-            // Hardcoded credentials as requested
-            // You can change these values to secure your admin panel
             if (u === 'admin' && p === 'cherryza123') {
-                document.getElementById('login-screen').style.display = 'none';
-                document.getElementById('admin-content').classList.remove('hidden');
+                sessionStorage.setItem(SESSION_KEY, 'true');
+                showAdminContent();
             } else {
                 const err = document.getElementById('login-error');
                 err.classList.remove('hidden');
-                // Shake animation effect
                 const loginBox = document.querySelector('#login-screen > div');
                 loginBox.classList.add('animate-pulse');
                 setTimeout(() => loginBox.classList.remove('animate-pulse'), 500);
             }
         }
 
-        // Admin Logic
+        function handleLogout() {
+            sessionStorage.removeItem(SESSION_KEY);
+            window.location.reload();
+        }
+
+        // Admin Product Logic
         const productList = document.getElementById('product-list');
         const modal = document.getElementById('product-modal');
         const form = document.getElementById('product-form');
@@ -284,8 +313,9 @@
             openModal(id);
         }
 
+        // Initialize
+        checkAuth();
         renderAdminProducts();
-
     </script>
 </body>
 
