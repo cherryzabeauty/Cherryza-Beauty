@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Cherryza Beauty</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: 'Playfair Display', serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Navigation (Simplified) -->
+    <nav class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="text-2xl font-bold text-cherry-800">Cherryza.</a>
+                <a href="shop.html" class="text-sm text-gray-500 hover:text-gray-900">Continue Shopping</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 class="text-3xl font-extrabold text-gray-900 mb-8">Shopping Bag</h1>
+
+        <div class="lg:grid lg:grid-cols-12 lg:gap-x-12 lg:items-start xl:gap-x-16">
+            <section class="lg:col-span-7">
+                <ul role="list" class="border-t border-b border-gray-200 divide-y divide-gray-200" id="cart-items">
+                    <!-- Cart items injected here -->
+                </ul>
+            </section>
+
+            <!-- Order Summary -->
+            <section
+                class="lg:col-span-5 mt-16 lg:mt-0 bg-white rounded-lg px-4 py-6 sm:p-6 lg:p-8 shadow-sm ring-1 ring-gray-900/5">
+                <h2 class="text-lg font-medium text-gray-900">Order Summary</h2>
+
+                <dl class="mt-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <dt class="text-sm text-gray-600">Subtotal</dt>
+                        <dd class="text-sm font-medium text-gray-900" id="subtotal">$0.00</dd>
+                    </div>
+                    <div class="flex items-center justify-between border-t border-gray-200 pt-4">
+                        <dt class="text-base font-medium text-gray-900">Order total</dt>
+                        <dd class="text-base font-medium text-gray-900" id="total">$0.00</dd>
+                    </div>
+                </dl>
+
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-4">Payment Method</h3>
+                    <div class="space-y-4">
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer p-3 border rounded-md hover:bg-gray-50 transition">
+                            <input type="radio" name="payment" value="cod"
+                                class="h-4 w-4 text-cherry-600 focus:ring-cherry-500 border-gray-300" checked>
+                            <span class="text-gray-900 font-medium">Cash on Delivery (COD)</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer p-3 border rounded-md hover:bg-gray-50 transition">
+                            <input type="radio" name="payment" value="card"
+                                class="h-4 w-4 text-cherry-600 focus:ring-cherry-500 border-gray-300">
+                            <span class="text-gray-900 font-medium">Credit/Debit Card</span>
+                        </label>
+                        <label
+                            class="flex items-center space-x-3 cursor-pointer p-3 border rounded-md hover:bg-gray-50 transition">
+                            <input type="radio" name="payment" value="transfer"
+                                class="h-4 w-4 text-cherry-600 focus:ring-cherry-500 border-gray-300">
+                            <span class="text-gray-900 font-medium">Online Transfer</span>
+                        </label>
+                    </div>
+
+                    <!-- Conditional Payment Details -->
+                    <div id="card-details"
+                        class="mt-4 hidden p-4 bg-gray-50 rounded-md border border-gray-200 animate-fade-in-down">
+                        <div class="space-y-3">
+                            <input type="text" placeholder="Card Number"
+                                class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-cherry-500 focus:border-cherry-500 sm:text-sm p-2 border">
+                            <div class="flex space-x-4">
+                                <input type="text" placeholder="MM/YY"
+                                    class="block w-1/2 border-gray-300 rounded-md shadow-sm focus:ring-cherry-500 focus:border-cherry-500 sm:text-sm p-2 border">
+                                <input type="text" placeholder="CVC"
+                                    class="block w-1/2 border-gray-300 rounded-md shadow-sm focus:ring-cherry-500 focus:border-cherry-500 sm:text-sm p-2 border">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="transfer-details"
+                        class="mt-4 hidden p-4 bg-blue-50 text-blue-800 rounded-md border border-blue-100 text-sm">
+                        <p class="font-bold">Bank Transfer Details:</p>
+                        <p>Bank: Cherry Bank</p>
+                        <p>Account: 1234-5678-9012</p>
+                        <p>Ref: Your Name</p>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <button id="checkout-btn" type="button"
+                        class="w-full bg-cherry-600 border border-transparent rounded-md shadow-sm py-3 px-4 text-base font-medium text-white hover:bg-cherry-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-50 focus:ring-cherry-500 transition-colors">Confirm
+                        Order</button>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const subtotalEl = document.getElementById('subtotal');
+            const totalEl = document.getElementById('total');
+            const paymentRadios = document.getElementsByName('payment');
+            const cardDetails = document.getElementById('card-details');
+            const transferDetails = document.getElementById('transfer-details');
+
+            // Make renderCart available globally
+            window.renderCart = function () {
+                const cart = getCart();
+                const products = getProducts();
+                let subtotal = 0;
+
+                cartItemsContainer.innerHTML = '';
+
+                if (cart.length === 0) {
+                    cartItemsContainer.innerHTML = '<p class="py-10 text-center text-gray-500">Your cart is empty.</p>';
+                }
+
+                cart.forEach(item => {
+                    const product = products.find(p => p.id === item.id);
+                    if (product) {
+                        const lineTotal = product.price * item.quantity;
+                        subtotal += lineTotal;
+
+                        cartItemsContainer.innerHTML += `
+                            <li class="flex py-6 sm:py-10">
+                                <div class="flex-shrink-0">
+                                    <img src="${product.image}" alt="${product.name}" class="w-24 h-24 rounded-md object-center object-cover sm:w-32 sm:h-32 shadow-sm">
+                                </div>
+                                <div class="ml-4 flex-1 flex flex-col justify-between sm:ml-6">
+                                    <div class="relative pr-9 sm:grid sm:grid-cols-2 sm:gap-x-6 sm:pr-0">
+                                        <div>
+                                            <div class="flex justify-between">
+                                                <h3 class="text-sm text-gray-900 font-medium"><a href="#">${product.name}</a></h3>
+                                            </div>
+                                            <p class="mt-1 text-sm font-medium text-gray-900">${formatCurrency(product.price)}</p>
+                                        </div>
+
+                                        <div class="mt-4 sm:mt-0 sm:pr-9">
+                                            <label for="quantity-${item.id}" class="sr-only">Quantity, ${product.name}</label>
+                                            <select id="quantity-${item.id}" name="quantity-${item.id}" onchange="updateQuantity(${item.id}, this.value)" class="max-w-full rounded-md border border-gray-300 py-1.5 text-base leading-5 font-medium text-gray-700 text-left shadow-sm focus:outline-none focus:ring-1 focus:ring-cherry-500 focus:border-cherry-500 sm:text-sm">
+                                                ${Array.from({ length: Math.min(10, product.stock) }, (_, i) => i + 1).map(num => `<option value="${num}" ${num === item.quantity ? 'selected' : ''}>${num}</option>`).join('')}
+                                            </select>
+
+                                            <button type="button" onclick="removeItem(${item.id})" class="absolute top-0 right-0 -mr-2 p-2 inline-flex text-gray-400 hover:text-gray-500">
+                                                <span class="sr-only">Remove</span>
+                                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                         `;
+                    }
+                });
+
+                subtotalEl.innerText = formatCurrency(subtotal);
+                totalEl.innerText = formatCurrency(subtotal); // No shipping logic for demo
+            }; // End renderCart assignment
+
+            // Toggle Payment Details
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    cardDetails.classList.add('hidden');
+                    transferDetails.classList.add('hidden');
+                    if (e.target.value === 'card') cardDetails.classList.remove('hidden');
+                    if (e.target.value === 'transfer') transferDetails.classList.remove('hidden');
+                });
+            });
+
+            // Checkout Button
+            document.getElementById('checkout-btn').addEventListener('click', () => {
+                const cart = getCart();
+                if (cart.length === 0) {
+                    alert("Your cart is empty!");
+                    return;
+                }
+
+                // Simulate Order
+                alert("Thank you for your order! We will process it shortly.");
+                localStorage.removeItem('cherryza_cart'); // Clear cart
+                window.location.href = 'index.html';
+            });
+
+            // Expose helper functions to window for onclick handlers
+            window.updateQuantity = (id, quantity) => {
+                let cart = getCart();
+                const item = cart.find(i => i.id === id);
+                if (item) {
+                    item.quantity = parseInt(quantity);
+                    saveCart(cart);
+                    renderCart();
+                }
+            };
+
+            window.removeItem = (id) => {
+                removeFromCart(id);
+                renderCart();
+            };
+
+            renderCart();
+        });
+    </script>
+</body>
+
+</html>
