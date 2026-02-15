@@ -59,6 +59,7 @@ function updateCartIcon() {
 // Featured Products Rendering (for Home Page)
 document.addEventListener('DOMContentLoaded', () => {
     updateCartIcon();
+    setupAutocomplete();
 
     const featuredContainer = document.getElementById('featured-products');
     if (featuredContainer) {
@@ -88,3 +89,72 @@ document.addEventListener('DOMContentLoaded', () => {
         `).join('');
     }
 });
+
+// Autocomplete Logic
+function setupAutocomplete() {
+    const searchInputs = document.querySelectorAll('input[name="search"]');
+    // Ensure data.js is loaded and getProducts is available
+    if (typeof getProducts !== 'function') return;
+    const products = getProducts();
+
+    searchInputs.forEach(input => {
+        // Ensure parent is relative for positioning
+        const form = input.closest('form');
+        if (!form) return;
+
+        // Check if we need to force relative positioning
+        const computedStyle = window.getComputedStyle(form);
+        if (computedStyle.position === 'static') {
+            form.style.position = 'relative';
+        }
+
+        // Create dropdown element
+        const dropdown = document.createElement('ul');
+        dropdown.className = 'absolute z-50 bg-white border border-gray-200 rounded-lg shadow-xl w-full left-0 mt-2 hidden max-h-60 overflow-y-auto divide-y divide-gray-100';
+        dropdown.style.top = '100%';
+
+        form.appendChild(dropdown);
+
+        input.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase().trim();
+            dropdown.innerHTML = '';
+
+            if (val.length < 1) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            const matches = products.filter(p => p.name.toLowerCase().includes(val)).slice(0, 5); // Limit 5
+
+            if (matches.length > 0) {
+                dropdown.classList.remove('hidden');
+                matches.forEach(p => {
+                    const li = document.createElement('li');
+                    li.className = 'px-4 py-2 hover:bg-gray-50 cursor-pointer flex items-center space-x-3 transition-colors';
+                    li.innerHTML = `
+                        <img src="${p.image}" class="w-10 h-10 rounded object-cover border border-gray-200" alt="">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">${p.name}</p>
+                            <p class="text-xs text-gray-500">${formatCurrency(p.price)}</p>
+                        </div>
+                    `;
+                    li.addEventListener('click', () => {
+                        input.value = p.name;
+                        dropdown.classList.add('hidden');
+                        form.submit(); // Auto-submit on selection
+                    });
+                    dropdown.appendChild(li);
+                });
+            } else {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Hide on click outside
+        document.addEventListener('click', (e) => {
+            if (!form.contains(e.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+    });
+}
