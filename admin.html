@@ -141,13 +141,13 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Product Image</label>
-                                <input type="file" id="p-image-file" accept="image/*"
+                                <label class="block text-sm font-medium text-gray-700">Product Images (First one will be
+                                    the main cover)</label>
+                                <input type="file" id="p-image-file" multiple accept="image/*"
                                     class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 mb-2">
-                                <input type="hidden" id="p-image-base64">
-                                <div class="mt-2">
-                                    <img id="p-image-preview" src=""
-                                        class="h-32 w-32 object-cover rounded hidden bg-gray-100 border border-gray-200">
+                                <input type="hidden" id="p-images-base64">
+                                <div id="p-image-preview-container" class="mt-2 flex gap-2 flex-wrap">
+                                    <!-- Previews will go here -->
                                 </div>
                             </div>
                             <div>
@@ -257,6 +257,18 @@
             });
         }
 
+        // Helper to display images in modal
+        function renderImagePreviews(images) {
+            const container = document.getElementById('p-image-preview-container');
+            container.innerHTML = '';
+            images.forEach(src => {
+                const img = document.createElement('img');
+                img.src = src;
+                img.className = 'h-20 w-20 object-cover rounded bg-gray-100 border border-gray-200';
+                container.appendChild(img);
+            });
+        }
+
         window.openModal = (id = null) => {
             modal.classList.remove('hidden');
             if (id) {
@@ -270,10 +282,9 @@
                 document.getElementById('p-category').value = p.category;
 
                 // Image Handling
-                document.getElementById('p-image-base64').value = p.image;
-                const preview = document.getElementById('p-image-preview');
-                preview.src = p.image;
-                preview.classList.remove('hidden');
+                const images = p.images && p.images.length > 0 ? p.images : (p.image ? [p.image] : []);
+                document.getElementById('p-images-base64').value = JSON.stringify(images);
+                renderImagePreviews(images);
 
                 document.getElementById('p-desc').value = p.description;
                 document.getElementById('modal-title').innerText = "Edit Product";
@@ -281,9 +292,8 @@
                 // Add Mode
                 form.reset();
                 document.getElementById('p-id').value = '';
-                document.getElementById('p-image-base64').value = '';
-                document.getElementById('p-image-preview').classList.add('hidden');
-                document.getElementById('p-image-preview').src = '';
+                document.getElementById('p-images-base64').value = '[]';
+                document.getElementById('p-image-preview-container').innerHTML = '';
                 document.getElementById('modal-title').innerText = "Add New Product";
             }
         };
@@ -292,67 +302,93 @@
             modal.classList.add('hidden');
         };
 
-        window.saveProduct = () => {
+        window.saveProduct = async () => {
             const id = document.getElementById('p-id').value;
-            const name = document.getElementById('p-name').value;
+            const name = document.getElementById('p-name').value.trim();
             const price = parseFloat(document.getElementById('p-price').value);
             const stock = parseInt(document.getElementById('p-stock').value);
             const category = document.getElementById('p-category').value;
-            const description = document.getElementById('p-desc').value;
+            const description = document.getElementById('p-desc').value.trim();
 
             // Image Logic
             const fileInput = document.getElementById('p-image-file');
-            const file = fileInput.files[0];
-            const existingImage = document.getElementById('p-image-base64').value; // Potentially empty if adding
+            const files = fileInput.files;
+            let existingImages = [];
+            try {
+                existingImages = JSON.parse(document.getElementById('p-images-base64').value || '[]');
+            } catch (e) { existingImages = []; }
 
-            if (!name || isNaN(price) || (!file && !existingImage)) {
-                alert("Please fill in required fields and upload an image.");
-                return;
+            // Validation
+            if (!name) return alert("Please enter a product Name.");
+            if (isNaN(price) || price <= 0) return alert("Please enter a valid Price.");
+            if (isNaN(stock) || stock < 0) return alert("Please enter a valid Stock quantity.");
+            if (!description) return alert("Please enter a Description.");
+
+            if (files.length === 0 && existingImages.length === 0) {
+                return alert("Please upload at least one Product Image.");
             }
 
-            const finishSave = (imgUrl) => {
-                let products = getProducts();
-                if (id) {
-                    // Update
-                    const index = products.findIndex(p => p.id == id);
-                    if (index !== -1) {
-                        products[index] = {
-                            ...products[index],
-                            name,
-                            price,
-                            stock,
-                            category,
-                            image: imgUrl,
-                            description,
-                            currency: 'LKR'
-                        };
-                    }
-                } else {
-                    // Create
-                    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-                    products.push({
-                        id: newId,
+            // Process Images
+            let finalImages = [];
+
+            const readFile = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            };
+
+            if (files.length > 0) {
+                try {
+                    const promises = Array.from(files).map(readFile);
+                    finalImages = await Promise.all(promises);
+                } catch (error) {
+                    console.error("Error reading files", error);
+                    return alert("Error reading image files.");
+                }
+            } else {
+                finalImages = existingImages;
+            }
+
+            const mainImage = finalImages[0];
+
+            let products = getProducts();
+            if (id) {
+                // Update
+                const index = products.findIndex(p => p.id == id);
+                if (index !== -1) {
+                    products[index] = {
+                        ...products[index],
                         name,
                         price,
                         stock,
                         category,
-                        image: imgUrl,
+                        image: mainImage, // Main thumbnail
+                        images: finalImages, // Full gallery
                         description,
                         currency: 'LKR'
-                    });
+                    };
                 }
-                saveProducts(products);
-                closeModal();
-                renderAdminProducts();
-            };
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => finishSave(e.target.result);
-                reader.readAsDataURL(file);
             } else {
-                finishSave(existingImage);
+                // Create
+                const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+                products.push({
+                    id: newId,
+                    name,
+                    price,
+                    stock,
+                    category,
+                    image: mainImage,
+                    images: finalImages,
+                    description,
+                    currency: 'LKR'
+                });
             }
+            saveProducts(products);
+            closeModal();
+            renderAdminProducts();
         };
 
         window.deleteProduct = (id) => {

@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="mt-4 flex justify-between">
                     <div>
                         <h3 class="text-sm text-gray-700">
-                            <a href="shop.html">
+                            <a href="product.html?id=${product.id}">
                                 <span aria-hidden="true" class="absolute inset-0"></span>
                                 ${product.name}
                             </a>
@@ -141,7 +141,7 @@ function setupAutocomplete() {
                     li.addEventListener('click', () => {
                         input.value = p.name;
                         dropdown.classList.add('hidden');
-                        form.submit(); // Auto-submit on selection
+                        window.location.href = `product.html?id=${p.id}`; // Go to details page directly
                     });
                     dropdown.appendChild(li);
                 });

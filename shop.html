@@ -213,19 +213,26 @@
                     const isOutOfStock = product.stock <= 0;
                     grid.innerHTML += `
                         <div class="group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
-                            <div class="relative w-full h-64 bg-gray-200 overflow-hidden">
+                            <a href="product.html?id=${product.id}" class="relative w-full h-64 bg-gray-200 overflow-hidden block">
                                 <img src="${product.image}" alt="${product.name}" class="w-full h-full object-center object-cover group-hover:scale-105 transition-transform duration-500">
                                 ${isOutOfStock ? '<div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white font-bold tracking-wider">OUT OF STOCK</div>' : ''}
-                            </div>
+                            </a>
                             <div class="p-6 flex flex-col flex-grow">
                                 <div class="flex justify-between items-start mb-2">
-                                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-cherry-600 transition truncate pr-2" title="${product.name}">${product.name}</h3>
+                                    <h3 class="text-lg font-semibold text-gray-900 group-hover:text-cherry-600 transition truncate pr-2" title="${product.name}">
+                                        <a href="product.html?id=${product.id}">${product.name}</a>
+                                    </h3>
                                     <p class="text-lg font-bold text-cherry-700 whitespace-nowrap">${formatCurrency(product.price, product.currency)}</p>
                                 </div>
                                 <p class="text-sm text-gray-500 mb-4 line-clamp-2 flex-grow">${product.description}</p>
-                                <button onclick="addToCart(${product.id})" ${isOutOfStock ? 'disabled' : ''} class="w-full mt-auto py-3 px-4 bg-gray-900 hover:bg-cherry-600 text-white font-medium rounded-lg transition-colors shadow-md transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
-                                    ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-                                </button>
+                                <div class="mt-auto grid grid-cols-2 gap-2">
+                                    <a href="product.html?id=${product.id}" class="py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition-colors text-center border border-gray-300">
+                                        View
+                                    </a>
+                                    <button onclick="addToCart(${product.id})" ${isOutOfStock ? 'disabled' : ''} class="py-3 px-4 bg-gray-900 hover:bg-cherry-600 text-white font-medium rounded-lg transition-colors shadow-md transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-center flex justify-center items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     `;
