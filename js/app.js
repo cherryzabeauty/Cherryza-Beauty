@@ -1,6 +1,6 @@
 // Utility Functions
-function formatCurrency(amount, currency = 'USD') {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency }).format(amount);
+function formatCurrency(amount, currency = 'LKR') {
+    return new Intl.NumberFormat('en-LK', { style: 'currency', currency: currency }).format(amount);
 }
 
 // Cart Logic

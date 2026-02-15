@@ -118,7 +118,7 @@
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700">Price (USD)</label>
+                                    <label class="block text-sm font-medium text-gray-700">Price (LKR)</label>
                                     <input type="number" step="0.01" id="p-price"
                                         class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                                         required>
@@ -141,10 +141,14 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-gray-700">Image URL</label>
-                                <input type="url" id="p-image"
-                                    class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                    placeholder="https://..." required>
+                                <label class="block text-sm font-medium text-gray-700">Product Image</label>
+                                <input type="file" id="p-image-file" accept="image/*"
+                                    class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-gray-700 hover:file:bg-gray-200 mb-2">
+                                <input type="hidden" id="p-image-base64">
+                                <div class="mt-2">
+                                    <img id="p-image-preview" src=""
+                                        class="h-32 w-32 object-cover rounded hidden bg-gray-100 border border-gray-200">
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700">Description</label>
@@ -264,13 +268,22 @@
                 document.getElementById('p-price').value = p.price;
                 document.getElementById('p-stock').value = p.stock;
                 document.getElementById('p-category').value = p.category;
-                document.getElementById('p-image').value = p.image;
+
+                // Image Handling
+                document.getElementById('p-image-base64').value = p.image;
+                const preview = document.getElementById('p-image-preview');
+                preview.src = p.image;
+                preview.classList.remove('hidden');
+
                 document.getElementById('p-desc').value = p.description;
                 document.getElementById('modal-title').innerText = "Edit Product";
             } else {
                 // Add Mode
                 form.reset();
                 document.getElementById('p-id').value = '';
+                document.getElementById('p-image-base64').value = '';
+                document.getElementById('p-image-preview').classList.add('hidden');
+                document.getElementById('p-image-preview').src = '';
                 document.getElementById('modal-title').innerText = "Add New Product";
             }
         };
@@ -285,30 +298,61 @@
             const price = parseFloat(document.getElementById('p-price').value);
             const stock = parseInt(document.getElementById('p-stock').value);
             const category = document.getElementById('p-category').value;
-            const image = document.getElementById('p-image').value;
             const description = document.getElementById('p-desc').value;
 
-            if (!name || !price || !image) {
-                alert("Please fill in required fields");
+            // Image Logic
+            const fileInput = document.getElementById('p-image-file');
+            const file = fileInput.files[0];
+            const existingImage = document.getElementById('p-image-base64').value; // Potentially empty if adding
+
+            if (!name || isNaN(price) || (!file && !existingImage)) {
+                alert("Please fill in required fields and upload an image.");
                 return;
             }
 
-            let products = getProducts();
-            if (id) {
-                // Update
-                const index = products.findIndex(p => p.id == id);
-                if (index !== -1) {
-                    products[index] = { ...products[index], name, price, stock, category, image, description };
+            const finishSave = (imgUrl) => {
+                let products = getProducts();
+                if (id) {
+                    // Update
+                    const index = products.findIndex(p => p.id == id);
+                    if (index !== -1) {
+                        products[index] = {
+                            ...products[index],
+                            name,
+                            price,
+                            stock,
+                            category,
+                            image: imgUrl,
+                            description,
+                            currency: 'LKR'
+                        };
+                    }
+                } else {
+                    // Create
+                    const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+                    products.push({
+                        id: newId,
+                        name,
+                        price,
+                        stock,
+                        category,
+                        image: imgUrl,
+                        description,
+                        currency: 'LKR'
+                    });
                 }
-            } else {
-                // Create
-                const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
-                products.push({ id: newId, name, price, stock, category, image, description, currency: 'USD' });
-            }
+                saveProducts(products);
+                closeModal();
+                renderAdminProducts();
+            };
 
-            saveProducts(products);
-            closeModal();
-            renderAdminProducts();
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => finishSave(e.target.result);
+                reader.readAsDataURL(file);
+            } else {
+                finishSave(existingImage);
+            }
         };
 
         window.deleteProduct = (id) => {
